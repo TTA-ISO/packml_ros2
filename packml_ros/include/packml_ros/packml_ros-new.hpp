@@ -223,14 +223,6 @@ public:
       }
     };
 
-    sm->on_mode_changed = [this](packml_sm::ModeType value) {
-      // TODO: enlighten all clients of new mode!
-      current_mode = value;
-
-      publish_status();
-    };
-
-
     init(node, sm);
 
     // Initial mode is configurable via the 'initial_mode' parameter (int).
