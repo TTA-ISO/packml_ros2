@@ -262,7 +262,7 @@ public:
         } else {
           ss << "Unrecognized transition request command: " << command_int;
           res->success = false;
-          res->error_code = res->UNRECGONIZED_REQUEST;
+          res->error_code = res->UNRECOGNIZED_REQUEST;
           res->message = ss.str();
         }
       };

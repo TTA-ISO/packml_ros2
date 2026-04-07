@@ -33,4 +33,4 @@ string message  # Message for display (only for human reading)
 # Error codes
 int8 SUCCESS = 1
 int8 INVALID_TRANSITION_REQUEST = -1
-int8 UNRECGONIZED_REQUEST = -2
+int8 UNRECOGNIZED_REQUEST = -2
