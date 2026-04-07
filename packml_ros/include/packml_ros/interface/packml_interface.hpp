@@ -269,8 +269,8 @@ class PackmlClientInterface {
     callback_grp = parent_node->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive, false);
     callbck_grp_exec.add_callback_group(callback_grp, parent_node->get_node_base_interface());
 
-    state_tr_client = parent_node->create_client<packml_msgs::srv::StateTransition>(state_tr_service_name, rmw_qos_profile_services_default, callback_grp);
-    mode_tr_client = parent_node->create_client<packml_msgs::srv::ModeTransition>(mode_tr_service_name, rmw_qos_profile_services_default, callback_grp);
+    state_tr_client = parent_node->create_client<packml_msgs::srv::StateTransition>(state_tr_service_name, rclcpp::ServicesQoS(), callback_grp);
+    mode_tr_client = parent_node->create_client<packml_msgs::srv::ModeTransition>(mode_tr_service_name, rclcpp::ServicesQoS(), callback_grp);
     // status_sub = parent_node->create_subscription<packml_msgs::msg::Status>(status_sub_name, rclcpp::SensorDataQoS(), [](const packml_msgs::msg::Status& status){});
   }
 };
@@ -372,7 +372,7 @@ protected:
         // Spin the executor of all clients, to receive service responses
         for (auto const& [client_name, client] : client_map_) {
           client->callbck_grp_exec.spin_once();
-           std::cout << client_name << ": Spinnend once" << std::endl;
+           std::cout << client_name << ": Spinned once" << std::endl;
         }
 
         // For all returned future service responses, check if data ready
@@ -486,7 +486,6 @@ std::shared_ptr<packml_msgs::srv::ModeChange::Request> req,
     // auto command = static_cast<packml_sm::TransitionCmd>(req->command);
 
     std::string error_message;
-    bool success = true;
 
     auto command = packml_ros::to_transition_cmd(req->command);
 
@@ -494,7 +493,7 @@ std::shared_ptr<packml_msgs::srv::ModeChange::Request> req,
       // invalid command!
       error_message =  "Unrecognized transition request command: " + to_string(command);
       res->success = false;
-      res->error_code = res->UNRECGONIZED_REQUEST;
+      res->error_code = res->UNRECOGNIZED_REQUEST;
       res->message = error_message;
     }
     else {
@@ -573,7 +572,7 @@ std::shared_ptr<packml_msgs::srv::ModeChange::Request> req,
     //     } else {
     //       ss << "Unrecognized transition request command: " << command_int;
     //       res->success = false;
-    //       res->error_code = res->UNRECGONIZED_REQUEST;
+    //       res->error_code = res->UNRECOGNIZED_REQUEST;
     //       res->message = ss.str();
     //     }
 
@@ -581,6 +580,8 @@ std::shared_ptr<packml_msgs::srv::ModeChange::Request> req,
   }
 
   void on_all_status(std::shared_ptr<packml_msgs::srv::AllStatus::Request> req, std::shared_ptr<packml_msgs::srv::AllStatus::Response> res) {
+    (void)req;
+    (void)res;
     // TODO: change the packml_msgs::srv::AllStatus to just contain packml_msgs::msg::Status.
   };
 
