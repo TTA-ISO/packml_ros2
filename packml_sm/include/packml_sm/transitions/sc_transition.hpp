@@ -16,8 +16,6 @@
 
 #pragma once
 
-#include <iostream>
-
 #include "QEvent"
 #include "QAbstractTransition"
 #include "packml_sm/states/state.hpp"
@@ -63,6 +61,6 @@ protected:
   * @brief Function to trigger an action when the transition is happening
   * @param e - triggering event
   */
-  virtual void onTransition(QEvent * e) {std::cout << "State Complete! type: " << e->type() << std::endl;}
+  virtual void onTransition(QEvent * e) {RCLCPP_DEBUG_STREAM(rclcpp::get_logger("packml_sm"), "State Complete! type: " << e->type());}
 };
 } // namespace packml_sm

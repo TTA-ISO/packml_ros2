@@ -211,7 +211,7 @@ public:
         bool command_valid = true;
         auto command_int = static_cast<int>(req->command);
         std::stringstream ss;
-        std::cout << "Evaluating transition request command: " << command_int << std::endl;
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("packml_ros"), "Evaluating transition request command: " << command_int);
         switch (command_int) {
           case packml_msgs::srv::StateChange::Request::ABORT:
             command_rtn = sm->abort();

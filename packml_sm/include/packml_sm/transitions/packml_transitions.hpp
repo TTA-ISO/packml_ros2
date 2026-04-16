@@ -15,11 +15,11 @@
 
 #pragma once
 
-#include <iostream>
 #include <memory>
 
 #include "QEvent"
 #include "QAbstractTransition"
+#include "rclcpp/rclcpp.hpp"
 // #include "packml_sm/common.hpp"
 // #include "packml_sm/states/state.hpp"
 // #include "packml_sm/states_generator.hpp"
@@ -58,11 +58,11 @@ protected:
             auto statetarget = targetState();
             if (statetarget->property("Available").toBool())
             {
-                std::cout << "Transition is available!" << std::endl;
+                RCLCPP_DEBUG(rclcpp::get_logger("packml_sm"), "Transition is available!");
                 return true;
             }
             else {
-                std::cout << "Transition to next state: is not available in this mode!" << std::endl;
+                RCLCPP_DEBUG(rclcpp::get_logger("packml_sm"), "Transition to next state: is not available in this mode!");
                 e->ignore();
                 return false;
             }
@@ -75,7 +75,7 @@ protected:
   * @brief Function to trigger an action when the transition is happening
   * @param e - triggering event
   */
-  virtual void onTransition(QEvent * e) {std::cout << e << std::endl;}
+  virtual void onTransition(QEvent * e) {RCLCPP_DEBUG(rclcpp::get_logger("packml_sm"), "Transition triggered, event pointer: %p", static_cast<void*>(e));}
 };
 
 }  // namespace packml_sm

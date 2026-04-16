@@ -26,7 +26,6 @@
 #include "QEvent"
 #include "QAbstractTransition"
 // #include "packml_sm/events.hpp"
-#include <iostream>
 #include <expected>
 
 #include "packml_sm/common.hpp"
@@ -43,7 +42,7 @@
 #include "packml_sm/transitions/cmd_transition.hpp"
 // #include "packml_sm/states_generator.hpp"
 // #include "packml_sm/transitions.hpp"
-// #include "rclcpp/rclcpp.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 namespace packml_sm
 {
@@ -60,12 +59,12 @@ namespace packml_sm
         if (event->isAccepted())
         {
           prom.set_value(true);
-          std::cout << "We have accepted the event!" << std::endl;
+          RCLCPP_INFO(rclcpp::get_logger("packml_sm"), "We have accepted the event!");
         }
         else
         {
           prom.set_value(false);
-          std::cout << "Event has not been accepted!" << std::endl;
+          RCLCPP_WARN(rclcpp::get_logger("packml_sm"), "Event has not been accepted!");
         }
       }
       else if (event->type() == PACKML_ERROR_EVENT_TYPE || event->type() == PACKML_STATE_COMPLETE_EVENT_TYPE)
@@ -74,7 +73,7 @@ namespace packml_sm
       }
       else
       {
-        std::cout << "This is not a user defined event!" << std::endl;
+        RCLCPP_DEBUG(rclcpp::get_logger("packml_sm"), "This is not a user defined event!");
       }
     }
 
@@ -323,10 +322,10 @@ public:
   virtual std::expected<bool, std::string> changeState(TransitionCmd mode);
 
   std::function<void(State value, QString name)> on_state_changed = [](packml_sm::State value, QString name){
-      std::cout << "Default callback; State changed to: " << name.toStdString() << "(" << value << ")" << std::endl;
+      RCLCPP_INFO_STREAM(rclcpp::get_logger("packml_sm"), "Default callback; State changed to: " << name.toStdString() << "(" << value << ")");
     };
   std::function<void(ModeType value)> on_mode_changed = [](packml_sm::ModeType value) {
-      std::cout << "Default callback; Mode changed to: " << packml_sm::to_string(value) << std::endl;
+      RCLCPP_INFO_STREAM(rclcpp::get_logger("packml_sm"), "Default callback; Mode changed to: " << packml_sm::to_string(value));
     };
 
   /**

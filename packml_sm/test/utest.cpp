@@ -17,7 +17,6 @@
 #include <QTimer>
 #include <gtest/gtest.h>
 #include <thread>
-#include <iostream>
 #include <chrono>
 #include <memory>
 #include "packml_sm/common.hpp"
@@ -48,10 +47,10 @@ bool waitForState(packml_sm::State state, packml_sm::StateMachine & sm)
   rclcpp::Rate r(static_cast<double>(SAMPLES) / TIMEOUT);
   for (int ii = 0; ii < SAMPLES; ++ii) {
     if (sm.getCurrentState() == state) {
-      std::cout << "State changed to " << state << std::endl;
+      RCLCPP_INFO_STREAM(rclcpp::get_logger("packml_sm_test"), "State changed to " << state);
       return true;
     }
-    std::cout << "Waiting for state to change to " << state << std::endl;
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("packml_sm_test"), "Waiting for state to change to " << state);
     r.sleep();
   }
   return false;
