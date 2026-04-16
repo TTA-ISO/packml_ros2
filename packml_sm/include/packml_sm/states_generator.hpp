@@ -112,14 +112,14 @@ public:
         state1->setProperty("Available", state.second);
       }
       currentMode = mode_to_switch;
-      std::cout << "Switched mode: " << mode_to_switch.name << std::endl;
+      RCLCPP_INFO_STREAM(rclcpp::get_logger("packml_sm"), "Switched mode: " << mode_to_switch.name);
       return true;
     }
     else
     {
       std::stringstream msg;
       msg << "Cannot switch mode in state: " << sm->getCurrentState();
-      std::cout << msg.str() << std::endl;
+      RCLCPP_WARN_STREAM(rclcpp::get_logger("packml_sm"), msg.str());
       return std::unexpected(msg.str());
     }
     // Cannot reach this
@@ -330,8 +330,7 @@ public:
         case State::COMPLETING:
         case State::COMPLETE:
         default: {
-            std::cout << "Fell through Transition switch, returning 'No Command' "
-                        "transition" << std::endl;
+            RCLCPP_WARN(rclcpp::get_logger("packml_sm"), "Fell through Transition switch, returning 'No Command' transition");
             transition = new CmdTransition(TransitionCmd::NO_COMMAND, "No_Command"); // NOLINT, this is how qt works
         }
       }
@@ -354,7 +353,7 @@ public:
   inline void add_state(std::shared_ptr<StateMachine> sm, PackmlState *state) {
     if (states.find(state->name()) == states.end()) {
       states[state->name()] = state;
-      std::cout << "Added state: " << state->name() << std::endl;
+      RCLCPP_DEBUG_STREAM(rclcpp::get_logger("packml_sm"), "Added state: " << state->name());
 
       // auto function = std::bind(StateMachine::setState )
       // Hacky way to filter out superstates. This way we do not get events from super states.
@@ -366,7 +365,7 @@ public:
       // transition->setTargetState(state);
       // previous_state->addTransition(transition);
     } else {
-      std::cout << state->name() << ": Already exists" << std::endl;
+      RCLCPP_WARN_STREAM(rclcpp::get_logger("packml_sm"), state->name() << ": Already exists");
     }
   }
 

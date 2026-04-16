@@ -127,11 +127,11 @@ class PackmlNodeInterface
         std::shared_ptr<packml_msgs::srv::StateTransition::Response> res) -> void {
             auto state = static_cast<packml_sm::State>(req->state.val);
             if (state == current_state) {
-              std::cout << "Node already in state: " << state << std::endl;
+              RCLCPP_INFO_STREAM(rclcpp::get_logger("packml_ros"), "Node already in state: " << to_string(state));
               res->success = true;
               return;
             }
-            std::cout << "Node State changing to: " << to_string(state) << std::endl;
+            RCLCPP_INFO_STREAM(rclcpp::get_logger("packml_ros"), "Node State changing to: " << to_string(state));
 
             bool success = false;
             std::string error_string;
@@ -144,7 +144,7 @@ class PackmlNodeInterface
             // TODO: else disabled, because currently a node cannot catch-up if it missed a state change
             // else {
               if (on_state_trans_req(state)) {
-                std::cout << "Node approved state switch" << std::endl;
+                RCLCPP_INFO(rclcpp::get_logger("packml_ros"), "Node approved state switch");
                 waiting_for_new_state = true;
                 switching_state = state;
                 success = true;
@@ -157,7 +157,7 @@ class PackmlNodeInterface
 
             if (!success) {
               res->message = error_string;
-              std::cout << error_string << std::endl;
+              RCLCPP_WARN_STREAM(rclcpp::get_logger("packml_ros"), error_string);
             }
             res->success = success;
         };
@@ -167,11 +167,11 @@ class PackmlNodeInterface
         std::shared_ptr<packml_msgs::srv::ModeTransition::Response> res)-> void {
             auto mode = static_cast<packml_sm::ModeType>(req->mode.val);
             if (mode == current_mode) {
-              std::cout << "Node already in mode: " << packml_sm::to_string(mode) << std::endl;
+              RCLCPP_INFO_STREAM(rclcpp::get_logger("packml_ros"), "Node already in mode: " << packml_sm::to_string(mode));
               res->success = true;
               return;
             }
-            std::cout << "Node Mode changing to: " << packml_sm::to_string(mode) << std::endl;
+            RCLCPP_INFO_STREAM(rclcpp::get_logger("packml_ros"), "Node Mode changing to: " << packml_sm::to_string(mode));
 
             bool success = false;
             std::string error_string;
@@ -184,7 +184,7 @@ class PackmlNodeInterface
             // TODO: else disabled, because currently a node cannot catch-up if it missed a mode change
             // else {
               if (on_mode_trans_req(mode)){
-                std::cout << "Node approved mode switch" << std::endl;
+                RCLCPP_INFO(rclcpp::get_logger("packml_ros"), "Node approved mode switch");
                 waiting_for_new_mode = true;
                 switching_mode = mode;
                 success = true;
@@ -197,7 +197,7 @@ class PackmlNodeInterface
 
             if (!success) {
               res->message = error_string;
-              std::cout << error_string << std::endl;
+              RCLCPP_WARN_STREAM(rclcpp::get_logger("packml_ros"), error_string);
             }
             res->success = success;
 
@@ -212,32 +212,32 @@ class PackmlNodeInterface
 
         if (current_state != state) {
           already_switched = true;
-          std::cout << "State change" << std::endl;
+          RCLCPP_INFO(rclcpp::get_logger("packml_ros"), "State change");
           if (switching_state != state && switching_state != packml_sm::State::UNDEFINED) {
-            std::cout << "State published(" << state <<  ") is not the state expected (" << switching_state << ") switching to" << std::endl;
+            RCLCPP_WARN_STREAM(rclcpp::get_logger("packml_ros"), "State published(" << state << ") is not the state expected (" << switching_state << ") switching to");
           }
           // TODO: else disabled, because currently a node cannot catch-up if it missed a state change
           // else {
             current_state = state;
             waiting_for_new_state = false;
-            std::cout << "Status changed to: State: " << state << std::endl;
+            RCLCPP_INFO_STREAM(rclcpp::get_logger("packml_ros"), "Status changed to: State: " << state);
             on_status_changed();
           // }
         }
 
         if (current_mode != mode) {
           if (already_switched) {
-            std::cout << "State and Mode switch detected!" << std::endl;
+            RCLCPP_WARN(rclcpp::get_logger("packml_ros"), "State and Mode switch detected!");
           }
-          std::cout << "Mode change" << std::endl;
+          RCLCPP_INFO(rclcpp::get_logger("packml_ros"), "Mode change");
           if (switching_mode != mode && switching_mode != 0) {
-            std::cout << "Mode published(" << packml_sm::to_string(mode) << ") is not the Mode expected (" << packml_sm::to_string(switching_mode) << ") switching to" << std::endl;
+            RCLCPP_WARN_STREAM(rclcpp::get_logger("packml_ros"), "Mode published(" << packml_sm::to_string(mode) << ") is not the Mode expected (" << packml_sm::to_string(switching_mode) << ") switching to");
           }
           // TODO: else disabled, because currently a node cannot catch-up if it missed a mode change
           // else {
             current_mode = mode;
             waiting_for_new_mode = false;
-            std::cout << "Mode changed to: " << packml_sm::to_string(mode) << std::endl;
+            RCLCPP_INFO_STREAM(rclcpp::get_logger("packml_ros"), "Mode changed to: " << packml_sm::to_string(mode));
             on_status_changed();
           // }
         }
@@ -247,9 +247,7 @@ class PackmlNodeInterface
     mode_server_ = node->template create_service<packml_msgs::srv::ModeTransition>("~/packml_mode_transition", onModeTransReq);
     status_sub_ = node->template create_subscription<packml_msgs::msg::Status>("packml_status", rclcpp::SensorDataQoS(), onStatusChanged);
 
-    std::cout << "Services created!" << std::endl;
-
-    current_mode = 0;
+    RCLCPP_INFO(rclcpp::get_logger("packml_ros"), "Services created!");
     current_state = packml_sm::State::UNDEFINED;
     switching_mode = 0;
     switching_state = packml_sm::State::UNDEFINED;
@@ -334,7 +332,7 @@ protected:
       // std::cout << "Requesting node " << key << " to change mode to: " << packml_sm::to_string(switching_mode) << std::endl;
 
       if (!func(val)->wait_for_service(std::chrono::seconds(1))){
-        std::cout << "Client :" << client << " Service: "<< func(val)->get_service_name() << " is unavailable!" << std::endl;
+        RCLCPP_WARN_STREAM(rclcpp::get_logger("packml_ros"), "Client :" << client << " Service: " << func(val)->get_service_name() << " is unavailable!");
         // TODO: If one of the clients is not online, we problably should error out?
         //  Or; maybe that node is not needed in the current mode and we should just report back information about which client succeeded and which did not
       }
@@ -363,11 +361,11 @@ protected:
   // bool wait_all_futures(std::map<std::string, typename rclcpp::Client<T>::SharedFuture>& futures, std::function<bool(std::string, typename T::Response::SharedPtr)> on_value) {
 
       if (futures.size() <= 0) {
-        std::cout << "No futures to wait on!" << std::endl;
+        RCLCPP_WARN(rclcpp::get_logger("packml_ros"), "No futures to wait on!");
         return false;
       } else if (futures.size() != client_map_.size()) {
         // TODO: see line 243
-        std::cout << "Not all clients responded with a future, maybe some are offline?" << std::endl;
+        RCLCPP_WARN(rclcpp::get_logger("packml_ros"), "Not all clients responded with a future, maybe some are offline?");
         return false;
       }
 
@@ -382,7 +380,7 @@ protected:
         // Spin the executor of all clients, to receive service responses
         for (auto const& [client_name, client] : client_map_) {
           client->callbck_grp_exec.spin_once();
-           std::cout << client_name << ": Spinned once" << std::endl;
+           RCLCPP_DEBUG_STREAM(rclcpp::get_logger("packml_ros"), client_name << ": Spinned once");
         }
 
         // For all returned future service responses, check if data ready
@@ -408,7 +406,7 @@ protected:
 
   void publish_status()
   {
-    std::cout << "Borrowing message" << std::endl;
+    RCLCPP_DEBUG(rclcpp::get_logger("packml_ros"), "Borrowing message");
     auto msg = status_pub_->borrow_loaned_message();
 
     auto state = packml_msgs::msg::State();
@@ -417,16 +415,16 @@ protected:
     // state.set__val(current_state);
     msg.get().state = state;
 
-    std::cout << "Current state: " << current_state << std::endl;
+    RCLCPP_DEBUG_STREAM(rclcpp::get_logger("packml_ros"), "Current state: " << current_state);
 
     auto mode = packml_msgs::msg::Mode();
     // TODO: make mapping between packml_msgs::msg::Mode constant declarations and packml_sm::Mode
     mode.val = static_cast<signed char>(current_mode);
     msg.get().mode = mode;
 
-    std::cout << "Current mode: " << packml_sm::to_string(current_mode) << std::endl;
+    RCLCPP_DEBUG_STREAM(rclcpp::get_logger("packml_ros"), "Current mode: " << packml_sm::to_string(current_mode));
 
-    std::cout << "publising message" << std::endl;
+    RCLCPP_DEBUG(rclcpp::get_logger("packml_ros"), "publising message");
     status_pub_->publish(std::move(msg));
   }
 
@@ -452,11 +450,11 @@ std::shared_ptr<packml_msgs::srv::ModeChange::Request> req,
       {
         auto handle_value = [res](std::string client, packml_msgs::srv::ModeTransition::Response::SharedPtr value){
             if (value->success) {
-              std::cout << client << " switched to new mode" << std::endl;
+              RCLCPP_INFO_STREAM(rclcpp::get_logger("packml_ros"), client << " switched to new mode");
               return true;
             }
 
-            std::cout << client << " did not switch mode! Error: " << value->message << std::endl;
+            RCLCPP_WARN_STREAM(rclcpp::get_logger("packml_ros"), client << " did not switch mode! Error: " << value->message);
             return false;
           };
 
@@ -515,7 +513,7 @@ std::shared_ptr<packml_msgs::srv::ModeChange::Request> req,
         res->message = change_result.error();
       }
       else {
-        std::cout <<  "Starting wait on promise" << std::endl;
+        RCLCPP_INFO(rclcpp::get_logger("packml_ros"), "Starting wait on promise");
         // TODO: wait on state_machine->on_state_changed and then return final response
         changed_prom_.get_future().get();
 

@@ -25,10 +25,11 @@
 // #include "packml_sm/events.hpp"
 #include "packml_sm/states/acting_state.hpp"
 #include <future>
-#include <iostream>
 #include <memory>
 #include <string>
 #include <thread>
+
+#include "rclcpp/rclcpp.hpp"
 
 namespace packml_sm {
 
@@ -323,8 +324,7 @@ StateMachine::StateMachine() : gen(std::make_shared<StatesGenerator>()) {
 // Callback from QT state machine when state changed
 void StateMachine::setState(State value, QString name) {
   std::string nameUtf = name.toStdString();
-  std::cout << "State changed(event) to: " << nameUtf << "(" << value << ")"
-            << std::endl;
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("packml_sm"), "State changed(event) to: " << nameUtf << "(" << value << ")");
   state_value_ = value;
   state_name_ = name;
   on_state_changed(value, name);
@@ -350,7 +350,7 @@ std::expected<bool, std::string> StateMachine::changeState(TransitionCmd command
   std::string error_message;
 
   std::stringstream ss;
-  std::cout << "Evaluating transition request command: " << command << std::endl;
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("packml_sm"), "Evaluating transition request command: " << command);
 
   switch (command) {
     case TransitionCmd::ABORT:
@@ -387,13 +387,13 @@ std::expected<bool, std::string> StateMachine::changeState(TransitionCmd command
 
   if (!command_valid) {
     error_message = "Invalid transition request command: " + to_string(command);
-    std::cout << error_message << std::endl;
+    RCLCPP_ERROR_STREAM(rclcpp::get_logger("packml_sm"), error_message);
     return std::unexpected<std::string>(error_message);
   }
 
   if (!command_rtn) {
     error_message =  "Transition command failed: " + to_string(command);
-    std::cout << error_message << std::endl;
+    RCLCPP_WARN_STREAM(rclcpp::get_logger("packml_sm"), error_message);
     return std::unexpected<std::string>(error_message);
   }
 
@@ -517,12 +517,12 @@ void ContinuousCycle::init(){
   {
     if (item->targetState() == gen->states[to_string(State::COMPLETING)])
     {
-      std::cout << "Found transition!" << std::endl;
+      RCLCPP_INFO_STREAM(rclcpp::get_logger("packml_sm"), "Found transition!");
       gen->states[to_string(State::EXECUTE)]->removeTransition(item);
-      std::cout << "Removed transition!" << std::endl;
+      RCLCPP_INFO_STREAM(rclcpp::get_logger("packml_sm"), "Removed transition!");
       auto trans = gen->generate_transition(gen->states[to_string(State::EXECUTE)], StatesGenerator::TransitionType::STATE_COMPLETED);
       gen->states[to_string(State::EXECUTE)]->addTransition(trans);
-      std::cout << "Added transition to self!" << std::endl;
+      RCLCPP_INFO_STREAM(rclcpp::get_logger("packml_sm"), "Added transition to self!");
     }
   }
 

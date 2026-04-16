@@ -175,16 +175,16 @@ public:
       this->changed_prom_ = std::promise<bool>();
        this->changed_prom_.set_value(true);
 
-      std::cout << "State changed to: " << name.toStdString() << "(" << value << ")" << std::endl;
+      RCLCPP_INFO_STREAM(rclcpp::get_logger("packml_ros"), "State changed to: " << name.toStdString() << "(" << value << ")");
 
       auto handle_value = [](std::string client, packml_msgs::srv::StateTransition::Response::SharedPtr value) {
         if (value->success)
         {
-          std::cout << client << " switched to new state" << std::endl;
+          RCLCPP_INFO_STREAM(rclcpp::get_logger("packml_ros"), client << " switched to new state");
           return true;
         }
 
-        std::cout << client << " did not switch state! Error: " << value->message << std::endl;
+        RCLCPP_WARN_STREAM(rclcpp::get_logger("packml_ros"), client << " did not switch state! Error: " << value->message);
         return false;
       };
 
@@ -197,14 +197,14 @@ public:
 
       auto succes = wait_all_futures<packml_msgs::srv::StateTransition>(futures, handle_value);
 
-      std::cout << "Done waiting all features" << std::endl;
+      RCLCPP_INFO(rclcpp::get_logger("packml_ros"), "Done waiting all features");
 
       if (!succes)
       {
         // res->success = false;
         // res->error_code = 1;
         // res->message = "Error in one of the packml clients";
-        std::cout << "unsuccessfull!" << std::endl;
+        RCLCPP_WARN(rclcpp::get_logger("packml_ros"), "unsuccessfull!");
       }
       else
       {
@@ -215,7 +215,7 @@ public:
         // Publish new state
         publish_status();
 
-        std::cout << "Done publishing!" << std::endl;
+        RCLCPP_INFO(rclcpp::get_logger("packml_ros"), "Done publishing!");
 
         // Send service response
         // res->success = true;

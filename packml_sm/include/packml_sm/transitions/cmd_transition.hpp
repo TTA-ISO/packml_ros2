@@ -15,8 +15,6 @@
 
 #pragma once
 
-#include <iostream>
-
 #include "QEvent"
 #include "QAbstractTransition"
 #include "packml_sm/states/state.hpp"
@@ -208,7 +206,7 @@ protected:
   * @brief Function to trigger an action when the transition is happening
   * @param e - triggering event
   */
-  virtual void onTransition(QEvent * e) {std::cout << e << std::endl;}
+  virtual void onTransition(QEvent * e) {RCLCPP_DEBUG(rclcpp::get_logger("packml_sm"), "Cmd transition triggered, event pointer: %p", static_cast<void*>(e));}
 
 
   /**
