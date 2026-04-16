@@ -126,6 +126,11 @@ class PackmlNodeInterface
       [this](const std::shared_ptr<packml_msgs::srv::StateTransition::Request> req,
         std::shared_ptr<packml_msgs::srv::StateTransition::Response> res) -> void {
             auto state = static_cast<packml_sm::State>(req->state.val);
+            if (state == current_state) {
+              std::cout << "Node already in state: " << state << std::endl;
+              res->success = true;
+              return;
+            }
             std::cout << "Node State changing to: " << to_string(state) << std::endl;
 
             bool success = false;
@@ -161,15 +166,20 @@ class PackmlNodeInterface
       [this](const std::shared_ptr<packml_msgs::srv::ModeTransition::Request> req,
         std::shared_ptr<packml_msgs::srv::ModeTransition::Response> res)-> void {
             auto mode = static_cast<packml_sm::ModeType>(req->mode.val);
+            if (mode == current_mode) {
+              std::cout << "Node already in mode: " << packml_sm::to_string(mode) << std::endl;
+              res->success = true;
+              return;
+            }
             std::cout << "Node Mode changing to: " << packml_sm::to_string(mode) << std::endl;
 
             bool success = false;
             std::string error_string;
 
             if (waiting_for_new_state) {
-              error_string = "Changing state but already waiting on new state";
+              error_string = "Changing mode but already waiting on new state";
             } else if (waiting_for_new_mode) {
-              error_string = "Changing state but mode change is still active";
+              error_string = "Changing mode but mode change is still active";
             }
             // TODO: else disabled, because currently a node cannot catch-up if it missed a mode change
             // else {
